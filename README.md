@@ -21,9 +21,8 @@ The project is being built incrementally, with each stage documented and committ
 
 > The draw.io schema below illustrates how the raw flat file was decomposed into dimension tables.
 
-![Data Model](docs/data_model.png)
-
-*Source file: `docs/data_model.drawio`*
+![Data Model](architecture\data-modelling\pc-data-modelling.drawio.png)
+* Source file: `docs/data_model.drawio`*
 
 ---
 
