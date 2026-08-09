@@ -50,7 +50,7 @@ pc-data-pipeline/
 │
 ├── data/
 │   └── raw/
-│       └── pc_data_raw.csv          # Original source file (flat, unnormalised)
+│       └── pc_data.csv              # Original source file (flat, unnormalised)
 │
 ├── docs/
 │   ├── data_model.drawio            # Editable draw.io schema
@@ -60,14 +60,17 @@ pc-data-pipeline/
 │       └── cloud_architecture.png   # Azure design (coming soon)
 │
 ├── sql/
+│   ├── 00_create_databases.sql       # Create pc_data, stg_pc_data and dwh_pc_data
 │   ├── 01_ingestion/
-│   │   └── load_csv_to_mssql.sql    # Load raw CSV into MSSQL
+│   │   └── create_raw_table.sql      # Create the raw landing table in pc_data
 │   │
 │   ├── 02_staging/
-│   │   └── stg_pc_data.sql          # Split flat file into dimension tables
+│   │   ├── create_staging_tables.sql # Create staging dimension and fact tables
+│   │   └── load_staging_data.sql     # Split raw rows into staging tables
 │   │
 │   ├── 03_warehouse/
-│   │   └── .gitkeep                 # In progress
+│   │   ├── create_warehouse_tables.sql # Create warehouse dimension and fact tables
+│   │   └── load_warehouse_data.sql     # Load staging data into the warehouse
 │   │
 │   └── 04_cleaning/
 │       └── .gitkeep                 # Planned
@@ -104,20 +107,24 @@ pc-data-pipeline/
 ### Prerequisites
 - Microsoft SQL Server (any recent edition)
 - SQL Server Management Studio (SSMS) or Azure Data Studio
-- The raw CSV file located at `data/raw/pc_data_raw.csv`
+- The raw CSV file located at `data/raw/pc_data.csv`
 
 ### Steps
 
 1. **Load raw data into MSSQL**
-   - Open `sql/01_ingestion/load_csv_to_mssql.sql`
-   - Update the file path in the script to match your local CSV location
-   - Execute against your MSSQL instance
+   - Run `sql/00_create_databases.sql`
+   - Run `sql/01_ingestion/create_raw_table.sql`
+   - Load `data/raw/pc_data.csv` into `pc_data.dbo.pc_data` manually
 
 2. **Run staging transformations**
-   - Open `sql/02_staging/stg_pc_data.sql`
-   - Execute to create the `stg_pc_data` database and split data into dimension tables
+   - Run `sql/02_staging/create_staging_tables.sql`
+   - Run `sql/02_staging/load_staging_data.sql`
 
-> Warehouse load and cleaning scripts will be added as the project progresses.
+3. **Load the warehouse**
+   - Run `sql/03_warehouse/create_warehouse_tables.sql`
+   - Run `sql/03_warehouse/load_warehouse_data.sql`
+
+> The warehouse layer now mirrors the staging model and keeps the same surrogate keys.
 
 ---
 
