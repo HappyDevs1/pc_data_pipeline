@@ -1,0 +1,7 @@
+# Visual Studio / SSDT build artifacts
+[Bb]in/
+[Oo]bj/
+.vs/
+*.suo
+*.user
+*.ispac
