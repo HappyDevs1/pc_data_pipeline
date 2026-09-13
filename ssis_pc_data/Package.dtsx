@@ -11,8 +11,8 @@
   DTS:LocaleID="7177"
   DTS:ObjectName="Package"
   DTS:PackageType="5"
-  DTS:VersionBuild="8"
-  DTS:VersionGUID="{1288AA9B-0902-48E9-9B1C-C8E667E66B7B}">
+  DTS:VersionBuild="9"
+  DTS:VersionGUID="{DAE0CAF2-C1D9-4D9D-BD8A-5F1B711044AB}">
   <DTS:Property
     DTS:Name="PackageFormatVersion">8</DTS:Property>
   <DTS:ConnectionManagers>
@@ -330,6 +330,23 @@
       </DTS:ObjectData>
     </DTS:Executable>
     <DTS:Executable
+      DTS:refId="Package\Create warehouse Tables"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{FAA5560E-0CBD-4E01-AAF0-5DD93DBBD76C}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Create warehouse Tables"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2022; © 2022 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{A516DF42-E1EF-45E6-8852-0EEE84C55BB5}"
+          SQLTask:SqlStatementSource="USE dwh_pc_data;&#xA;&#xA;IF OBJECT_ID('dbo.fact_table', 'U') IS NOT NULL DROP TABLE dbo.fact_table;&#xA;IF OBJECT_ID('dbo.dim_specs', 'U') IS NOT NULL DROP TABLE dbo.dim_specs;&#xA;IF OBJECT_ID('dbo.dim_sales', 'U') IS NOT NULL DROP TABLE dbo.dim_sales;&#xA;IF OBJECT_ID('dbo.dim_payment', 'U') IS NOT NULL DROP TABLE dbo.dim_payment;&#xA;IF OBJECT_ID('dbo.dim_shop', 'U') IS NOT NULL DROP TABLE dbo.dim_shop;&#xA;IF OBJECT_ID('dbo.dim_location', 'U') IS NOT NULL DROP TABLE dbo.dim_location;&#xA;&#xA;CREATE TABLE dbo.dim_location&#xA;(&#xA;    location_id INT IDENTITY(1, 1) PRIMARY KEY,&#xA;    continent NVARCHAR(250) NOT NULL,&#xA;    country NVARCHAR(250) NOT NULL,&#xA;    province NVARCHAR(250) NOT NULL&#xA;);&#xA;&#xA;CREATE TABLE dbo.dim_shop&#xA;(&#xA;    shop_id INT IDENTITY(1, 1) PRIMARY KEY,&#xA;    shop_name NVARCHAR(250) NOT NULL,&#xA;    shop_age INT NOT NULL&#xA;);&#xA;&#xA;CREATE TABLE dbo.dim_payment&#xA;(&#xA;    payment_id INT IDENTITY(1, 1) PRIMARY KEY,&#xA;    payment_method NVARCHAR(250) NOT NULL,&#xA;    channel NVARCHAR(250) NOT NULL,&#xA;    priority NVARCHAR(250) NOT NULL&#xA;);&#xA;&#xA;CREATE TABLE dbo.dim_sales&#xA;(&#xA;    sales_id INT IDENTITY(1, 1) PRIMARY KEY,&#xA;    sales_person_name NVARCHAR(250) NOT NULL,&#xA;    sales_person_department NVARCHAR(250) NOT NULL&#xA;);&#xA;&#xA;CREATE TABLE dbo.dim_specs&#xA;(&#xA;    spec_id INT IDENTITY(1, 1) PRIMARY KEY,&#xA;    pc_make NVARCHAR(250) NOT NULL,&#xA;    pc_model NVARCHAR(250) NOT NULL,&#xA;    storage_type NVARCHAR(250) NOT NULL,&#xA;    ram NVARCHAR(250) NOT NULL&#xA;);&#xA;&#xA;CREATE TABLE dbo.fact_table&#xA;(&#xA;    fact_id INT IDENTITY(1, 1) PRIMARY KEY,&#xA;    location_id INT NOT NULL,&#xA;    shop_id INT NOT NULL,&#xA;    spec_id INT NOT NULL,&#xA;    sales_id INT NOT NULL,&#xA;    payment_id INT NOT NULL,&#xA;    cost_price INT NULL,&#xA;    sale_price INT NULL,&#xA;    discount_amount INT NULL,&#xA;    finance_amount INT NULL,&#xA;    credit_score INT NULL,&#xA;    cost_of_repairs INT NULL,&#xA;    total_sales_per_employee INT NULL,&#xA;    pc_market_price INT NULL,&#xA;    ship_date DATE NULL,&#xA;    CONSTRAINT FK_fact_table_dim_location FOREIGN KEY (location_id) REFERENCES dbo.dim_location (location_id),&#xA;    CONSTRAINT FK_fact_table_dim_shop FOREIGN KEY (shop_id) REFERENCES dbo.dim_shop (shop_id),&#xA;    CONSTRAINT FK_fact_table_dim_specs FOREIGN KEY (spec_id) REFERENCES dbo.dim_specs (spec_id),&#xA;    CONSTRAINT FK_fact_table_dim_sales FOREIGN KEY (sales_id) REFERENCES dbo.dim_sales (sales_id),&#xA;    CONSTRAINT FK_fact_table_dim_payment FOREIGN KEY (payment_id) REFERENCES dbo.dim_payment (payment_id)&#xA;);" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
       DTS:refId="Package\Load staging Data"
       DTS:CreationName="Microsoft.ExecuteSQLTask"
       DTS:Description="Execute SQL Task"
@@ -344,6 +361,23 @@
         <SQLTask:SqlTaskData
           SQLTask:Connection="{A516DF42-E1EF-45E6-8852-0EEE84C55BB5}"
           SQLTask:SqlStatementSource="USE stg_pc_data;&#xA;&#xA;DELETE FROM dbo.stg_fact_table;&#xA;DELETE FROM dbo.stg_dim_specs;&#xA;DELETE FROM dbo.stg_dim_sales;&#xA;DELETE FROM dbo.stg_dim_payment;&#xA;DELETE FROM dbo.stg_dim_shop;&#xA;DELETE FROM dbo.stg_dim_location;&#xA;&#xA;INSERT INTO dbo.stg_dim_location (continent, country, province)&#xA;SELECT DISTINCT&#xA;    LTRIM(RTRIM(src.[Continent])),&#xA;    LTRIM(RTRIM(src.[Country or State])),&#xA;    LTRIM(RTRIM(src.[Province or City]))&#xA;FROM pc_data.dbo.pc_data AS src&#xA;WHERE NULLIF(LTRIM(RTRIM(src.[Continent])), '') IS NOT NULL&#xA;  AND NULLIF(LTRIM(RTRIM(src.[Country or State])), '') IS NOT NULL&#xA;  AND NULLIF(LTRIM(RTRIM(src.[Province or City])), '') IS NOT NULL;&#xA;&#xA;INSERT INTO dbo.stg_dim_shop (shop_name, shop_age)&#xA;SELECT DISTINCT&#xA;    LTRIM(RTRIM(src.[Shop Name])),&#xA;    TRY_CONVERT(INT, NULLIF(LTRIM(RTRIM(src.[Shop Age])), ''))&#xA;FROM pc_data.dbo.pc_data AS src&#xA;WHERE NULLIF(LTRIM(RTRIM(src.[Shop Name])), '') IS NOT NULL;&#xA;&#xA;INSERT INTO dbo.stg_dim_payment (payment_method, channel, priority)&#xA;SELECT DISTINCT&#xA;    LTRIM(RTRIM(src.[Payment Method])),&#xA;    LTRIM(RTRIM(src.[Channel])),&#xA;    LTRIM(RTRIM(src.[Priority]))&#xA;FROM pc_data.dbo.pc_data AS src&#xA;WHERE NULLIF(LTRIM(RTRIM(src.[Payment Method])), '') IS NOT NULL&#xA;  AND NULLIF(LTRIM(RTRIM(src.[Channel])), '') IS NOT NULL&#xA;  AND NULLIF(LTRIM(RTRIM(src.[Priority])), '') IS NOT NULL;&#xA;&#xA;INSERT INTO dbo.stg_dim_sales (sales_person_name, sales_person_department)&#xA;SELECT DISTINCT&#xA;    LTRIM(RTRIM(src.[Sales Person Name])),&#xA;    LTRIM(RTRIM(src.[Sales Person Department]))&#xA;FROM pc_data.dbo.pc_data AS src&#xA;WHERE NULLIF(LTRIM(RTRIM(src.[Sales Person Name])), '') IS NOT NULL&#xA;  AND NULLIF(LTRIM(RTRIM(src.[Sales Person Department])), '') IS NOT NULL;&#xA;&#xA;INSERT INTO dbo.stg_dim_specs (pc_make, pc_model, storage_type, ram)&#xA;SELECT DISTINCT&#xA;    LTRIM(RTRIM(src.[PC Make])),&#xA;    LTRIM(RTRIM(src.[PC Model])),&#xA;    LTRIM(RTRIM(src.[Storage Type])),&#xA;    LTRIM(RTRIM(src.[RAM]))&#xA;FROM pc_data.dbo.pc_data AS src&#xA;WHERE NULLIF(LTRIM(RTRIM(src.[PC Make])), '') IS NOT NULL&#xA;  AND NULLIF(LTRIM(RTRIM(src.[PC Model])), '') IS NOT NULL&#xA;  AND NULLIF(LTRIM(RTRIM(src.[Storage Type])), '') IS NOT NULL&#xA;  AND NULLIF(LTRIM(RTRIM(src.[RAM])), '') IS NOT NULL;&#xA;&#xA;INSERT INTO dbo.stg_fact_table&#xA;(&#xA;    location_id,&#xA;    shop_id,&#xA;    spec_id,&#xA;    sales_id,&#xA;    payment_id,&#xA;    cost_price,&#xA;    sale_price,&#xA;    discount_amount,&#xA;    finance_amount,&#xA;    credit_score,&#xA;    cost_of_repairs,&#xA;    total_sales_per_employee,&#xA;    pc_market_price,&#xA;    ship_date&#xA;)&#xA;SELECT&#xA;    l.location_id,&#xA;    sh.shop_id,&#xA;    sp.spec_id,&#xA;    sa.sales_id,&#xA;    pa.payment_id,&#xA;    TRY_CONVERT(INT, NULLIF(LTRIM(RTRIM(src.[Cost Price])), '')),&#xA;    TRY_CONVERT(INT, NULLIF(LTRIM(RTRIM(src.[Sale Price])), '')),&#xA;    TRY_CONVERT(INT, NULLIF(LTRIM(RTRIM(src.[Discount Amount])), '')),&#xA;    TRY_CONVERT(INT, NULLIF(LTRIM(RTRIM(src.[Finance Amount])), '')),&#xA;    TRY_CONVERT(INT, NULLIF(LTRIM(RTRIM(src.[Credit Score])), '')),&#xA;    TRY_CONVERT(INT, NULLIF(LTRIM(RTRIM(src.[Cost of Repairs])), '')),&#xA;    TRY_CONVERT(INT, NULLIF(LTRIM(RTRIM(src.[Total Sales per Employee])), '')),&#xA;    TRY_CONVERT(INT, NULLIF(LTRIM(RTRIM(src.[PC Market Price])), '')),&#xA;    TRY_CONVERT(DATE, NULLIF(LTRIM(RTRIM(src.[Ship Date])), 'N/A'))&#xA;FROM pc_data.dbo.pc_data AS src&#xA;INNER JOIN dbo.stg_dim_location AS l&#xA;    ON  LTRIM(RTRIM(src.[Continent])) = l.continent&#xA;    AND LTRIM(RTRIM(src.[Country or State])) = l.country&#xA;    AND LTRIM(RTRIM(src.[Province or City])) = l.province&#xA;INNER JOIN dbo.stg_dim_shop AS sh&#xA;    ON  LTRIM(RTRIM(src.[Shop Name])) = sh.shop_name&#xA;    AND TRY_CONVERT(INT, NULLIF(LTRIM(RTRIM(src.[Shop Age])), '')) = sh.shop_age&#xA;INNER JOIN dbo.stg_dim_specs AS sp&#xA;    ON  LTRIM(RTRIM(src.[PC Make])) = sp.pc_make&#xA;    AND LTRIM(RTRIM(src.[PC Model])) = sp.pc_model&#xA;    AND LTRIM(RTRIM(src.[Storage Type])) = sp.storage_type&#xA;    AND LTRIM(RTRIM(src.[RAM])) = sp.ram&#xA;INNER JOIN dbo.stg_dim_sales AS sa&#xA;    ON  LTRIM(RTRIM(src.[Sales Person Name])) = sa.sales_person_name&#xA;    AND LTRIM(RTRIM(src.[Sales Person Department])) = sa.sales_person_department&#xA;INNER JOIN dbo.stg_dim_payment AS pa&#xA;    ON  LTRIM(RTRIM(src.[Payment Method])) = pa.payment_method&#xA;    AND LTRIM(RTRIM(src.[Channel])) = pa.channel&#xA;    AND LTRIM(RTRIM(src.[Priority])) = pa.priority;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Load warehouse Data"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{A1424308-463E-4037-AF23-80EB7CA4B776}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Load warehouse Data"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2022; © 2022 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{A516DF42-E1EF-45E6-8852-0EEE84C55BB5}"
+          SQLTask:SqlStatementSource="USE dwh_pc_data;&#xA;&#xA;DELETE FROM dbo.fact_table;&#xA;DELETE FROM dbo.dim_specs;&#xA;DELETE FROM dbo.dim_sales;&#xA;DELETE FROM dbo.dim_payment;&#xA;DELETE FROM dbo.dim_shop;&#xA;DELETE FROM dbo.dim_location;&#xA;&#xA;SET IDENTITY_INSERT dbo.dim_location ON;&#xA;INSERT INTO dbo.dim_location (location_id, continent, country, province)&#xA;SELECT location_id, continent, country, province&#xA;FROM stg_pc_data.dbo.stg_dim_location;&#xA;SET IDENTITY_INSERT dbo.dim_location OFF;&#xA;&#xA;SET IDENTITY_INSERT dbo.dim_shop ON;&#xA;INSERT INTO dbo.dim_shop (shop_id, shop_name, shop_age)&#xA;SELECT shop_id, shop_name, shop_age&#xA;FROM stg_pc_data.dbo.stg_dim_shop;&#xA;SET IDENTITY_INSERT dbo.dim_shop OFF;&#xA;&#xA;SET IDENTITY_INSERT dbo.dim_payment ON;&#xA;INSERT INTO dbo.dim_payment (payment_id, payment_method, channel, priority)&#xA;SELECT payment_id, payment_method, channel, priority&#xA;FROM stg_pc_data.dbo.stg_dim_payment;&#xA;SET IDENTITY_INSERT dbo.dim_payment OFF;&#xA;&#xA;SET IDENTITY_INSERT dbo.dim_sales ON;&#xA;INSERT INTO dbo.dim_sales (sales_id, sales_person_name, sales_person_department)&#xA;SELECT sales_id, sales_person_name, sales_person_department&#xA;FROM stg_pc_data.dbo.stg_dim_sales;&#xA;SET IDENTITY_INSERT dbo.dim_sales OFF;&#xA;&#xA;SET IDENTITY_INSERT dbo.dim_specs ON;&#xA;INSERT INTO dbo.dim_specs (spec_id, pc_make, pc_model, storage_type, ram)&#xA;SELECT spec_id, pc_make, pc_model, storage_type, ram&#xA;FROM stg_pc_data.dbo.stg_dim_specs;&#xA;SET IDENTITY_INSERT dbo.dim_specs OFF;&#xA;&#xA;INSERT INTO dbo.fact_table&#xA;(&#xA;    location_id,&#xA;    shop_id,&#xA;    spec_id,&#xA;    sales_id,&#xA;    payment_id,&#xA;    cost_price,&#xA;    sale_price,&#xA;    discount_amount,&#xA;    finance_amount,&#xA;    credit_score,&#xA;    cost_of_repairs,&#xA;    total_sales_per_employee,&#xA;    pc_market_price,&#xA;    ship_date&#xA;)&#xA;SELECT&#xA;    location_id,&#xA;    shop_id,&#xA;    spec_id,&#xA;    sales_id,&#xA;    payment_id,&#xA;    cost_price,&#xA;    sale_price,&#xA;    discount_amount,&#xA;    finance_amount,&#xA;    credit_score,&#xA;    cost_of_repairs,&#xA;    total_sales_per_employee,&#xA;    pc_market_price,&#xA;    ship_date&#xA;FROM stg_pc_data.dbo.stg_fact_table;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
       </DTS:ObjectData>
     </DTS:Executable>
     <DTS:Executable
@@ -1659,6 +1693,22 @@
       DTS:LogicalAnd="True"
       DTS:ObjectName="Constraint 1"
       DTS:To="Package\Load staging Data" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint 2]"
+      DTS:CreationName=""
+      DTS:DTSID="{7A04E2FB-C03B-4E99-8612-103814658E43}"
+      DTS:From="Package\Load staging Data"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint 2"
+      DTS:To="Package\Create warehouse Tables" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint 3]"
+      DTS:CreationName=""
+      DTS:DTSID="{478381D0-CE65-4FF7-BC64-85C9B3EE2864}"
+      DTS:From="Package\Create warehouse Tables"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint 3"
+      DTS:To="Package\Load warehouse Data" />
   </DTS:PrecedenceConstraints>
   <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
 <!--This CDATA section contains the layout information of the package. The section includes information such as (x,y) coordinates, width, and height.-->
@@ -1671,7 +1721,7 @@
     design-time-name="Package">
     <LayoutInfo>
       <GraphLayout
-        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        Capacity="16" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
         <NodeLayout
           Size="140,42"
           Id="Package\Upload Data"
@@ -1721,6 +1771,70 @@
         <EdgeLayout
           Id="Package.PrecedenceConstraints[Constraint 1]"
           TopLeft="593,235">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,60"
+              Start="0,0"
+              End="0,52.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,52.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <NodeLayout
+          Size="205,42"
+          Id="Package\Create warehouse Tables"
+          TopLeft="499,395" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint 2]"
+          TopLeft="593,337">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="8.5,58"
+              Start="0,0"
+              End="8.5,50.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,25" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,25"
+                    Point2="0,29"
+                    Point3="4,29" />
+                  <mssgle:LineSegment
+                    End="4.5,29" />
+                  <mssgle:CubicBezierSegment
+                    Point1="4.5,29"
+                    Point2="8.5,29"
+                    Point3="8.5,33" />
+                  <mssgle:LineSegment
+                    End="8.5,50.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <NodeLayout
+          Size="186,42"
+          Id="Package\Load warehouse Data"
+          TopLeft="515,497" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint 3]"
+          TopLeft="604.75,437">
           <EdgeLayout.Curve>
             <mssgle:Curve
               StartConnector="{assembly:Null}"
