@@ -32,9 +32,9 @@ The project is being built incrementally, with each stage documented and committ
 |---|-------|--------|-------------|
 | 1 | Ingestion | ✅ Done | Load raw CSV into MSSQL Server |
 | 2 | Staging | ✅ Done | Split flat file into dimension tables via `stg_pc_data` |
-| 3 | Warehouse Load | 🔄 In Progress | Load transformed data from staging into the warehouse |
+| 3 | Warehouse Load | ✅ Done | Load transformed data from staging into the warehouse |
 | 4 | Data Cleaning | ⬜ Planned | Clean and validate data within the warehouse layer |
-| 5 | Automation | ⬜ Planned | Automate pipeline via Python scripts or stored procedures |
+| 5 | Automation | ✅ Done | Pipeline automated end-to-end via an SSIS package (`ssis_pc_data/`) |
 | 6 | Cloud Migration | ⬜ Planned | Migrate to Azure (ADF, Synapse Analytics, Blob Storage) |
 
 ---
@@ -75,6 +75,11 @@ pc-data-pipeline/
 │   └── 04_cleaning/
 │       └── .gitkeep                 # Planned
 │
+├── ssis_pc_data/
+│   ├── Package.dtsx                 # SSIS Control Flow: automates the full pipeline
+│   ├── ssis_pc_data.dtproj          # SSIS project file
+│   └── ssis_pc_data.sln             # Visual Studio solution
+│
 ├── cloud/
 │   ├── infra/                       # IaC - Bicep / ARM / Terraform (planned)
 │   │   └── .gitkeep
@@ -84,7 +89,7 @@ pc-data-pipeline/
 │       └── storage_config.example.json   # Sanitised config template
 │
 └── automation/
-    └── .gitkeep                     # Python / stored procedure scripts (planned)
+    └── .gitkeep                     # Unused - automation implemented via SSIS instead (see ssis_pc_data/)
 ```
 
 ---
@@ -95,21 +100,40 @@ pc-data-pipeline/
 |-------|------------|
 | Database | Microsoft SQL Server |
 | Staging | MSSQL - `stg_pc_data` database |
-| Warehouse | MSSQL (in progress) |
+| Warehouse | MSSQL - `dwh_pc_data` database |
 | Data Modelling | Draw.io |
+| Automation | SQL Server Integration Services (SSIS) |
 | Cloud (planned) | Azure - ADF, Synapse Analytics, Blob Storage |
-| Automation (planned) | Python / SQL Stored Procedures |
 
 ---
 
 ## How to Run (Current State)
 
-### Prerequisites
+### Option A: Automated (SSIS)
+
+The full pipeline is automated as an SSIS package.
+
+**Prerequisites**
+- Microsoft SQL Server (any recent edition)
+- Visual Studio with SQL Server Data Tools (SSDT) and the Integration Services extension installed
+- The raw CSV file located at `data/raw/pc_data.csv`
+
+**Steps**
+1. Run `sql/00_create_databases.sql` once against your SQL Server instance (one-time setup - creates `pc_data`, `stg_pc_data`, `dwh_pc_data`). `CREATE DATABASE` can't run inside the package itself since it must be the only statement in its batch, so this stays a manual bootstrap step.
+2. Open `ssis_pc_data/ssis_pc_data.sln` in Visual Studio.
+3. Update the `pc_data` connection manager if your server name differs from the default.
+4. Run `Package.dtsx` (F5). This executes, in order: create raw table -> load CSV into `pc_data` -> create staging tables -> load staging data -> create warehouse tables -> load warehouse data.
+
+### Option B: Manual (SSMS)
+
+Useful for debugging a single stage in isolation.
+
+**Prerequisites**
 - Microsoft SQL Server (any recent edition)
 - SQL Server Management Studio (SSMS) or Azure Data Studio
 - The raw CSV file located at `data/raw/pc_data.csv`
 
-### Steps
+**Steps**
 
 1. **Load raw data into MSSQL**
    - Run `sql/00_create_databases.sql`
@@ -124,18 +148,18 @@ pc-data-pipeline/
    - Run `sql/03_warehouse/create_warehouse_tables.sql`
    - Run `sql/03_warehouse/load_warehouse_data.sql`
 
-> The warehouse layer now mirrors the staging model and keeps the same surrogate keys.
+> The warehouse layer mirrors the staging model and keeps the same surrogate keys.
 
 ---
 
 ## Roadmap
 
-- [ ] Complete warehouse load scripts (`sql/03_warehouse/`)
+- [x] Complete warehouse load scripts (`sql/03_warehouse/`)
+- [x] Automate the pipeline end-to-end (`ssis_pc_data/`)
 - [ ] Implement data cleaning layer (`sql/04_cleaning/`)
-- [ ] Write automation scripts (`automation/`)
 - [ ] Design Azure cloud architecture
 - [ ] Provision Azure infrastructure via Bicep (`cloud/infra/`)
-- [ ] Build ADF pipeline to replace manual SQL execution (`cloud/pipelines/`)
+- [ ] Build ADF pipeline to replace the SSIS package (`cloud/pipelines/`)
 
 ---
 
